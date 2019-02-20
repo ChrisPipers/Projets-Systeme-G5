@@ -1,0 +1,49 @@
+Aide mémoire 
+wget -O Raspbian.zip https://downloads.raspberrypi.org/raspbian_full_latest /home/mitch/Documents
+unzip /home/mitch/Documents/Raspbian.zip -d /home/mitch/Documents
+user="$(whoami)"
+(ls "/home/$user/Documents/Raspbian.zip" >> /dev/null && echo fichier ditrbution Raspbian.zip trouvé)  || ( download ) 
+file=$(ls *raspbian*.img)
+(ls "/home/$user/Documents/$file" >> /dev/null && echo fichier distribution *Raspbian*.img trouvé)  || ( unz )
+lsblk -p -o name,size
+until [[ "$valid" == "yes"  ]]
+do
+        read dev
+        if [ "$dev" == "display devices"  ]
+        if (lsblk -f | grep -wq $dev) 
+done
+umount /dev/$dev 2> /dev/null 
+sudo dd bs=4M if=/home/$user/Documents/$file of=/dev/$dev status=progress conv=fsync
+sudo apt update
+sudo apt upgrade 
+sudo mkdir /home/files
+sudo mkdir /home/files/public
+sudo chown -R root:users /home/files/public
+sudo chmod -R ug=rwx,o=rx /home/files/public
+sudo apt install samba samba-common-bin 
+
+echo "[public]
+comment = Public Storage 
+path = /home/files/public 
+valid users = @users 
+force group = users 
+create mask 0771 
+read only = no " >> /etc/samba/smb.conf
+
+sudo /etc/init.d/samba restart
+sudo smbpasswd -a pi
+
+umount /dev/$dev
+mkfs.ext4 /dev/$dev
+sudo mkdir /home/files/public/disk1
+sudo chown -R root:users /home/files/public/disk1
+sudo chmod -R ug=rwx,or=rx /home/files/public/disk1
+sudo mount /dev/$dev /home/files/public/disk1
+echo "/dev/sda1 /home/files/public/disk1 auto noatime,nofail 0 0" >> /etc/fstab
+
+sudo apt-get install cifs-utils
+echo "//RASPBERRYPI/public /media/documents cifs username=pi,password=1234,iocharset=utf8,file_mode=0777,dir_mode=0777,noperm, 0 0 " >> /etc/fstab
+sudo mount -a 
+
+sudo echo program_usb_boot_mode=1 | sodo tee -a /boot/config.txt
+sudo reboot

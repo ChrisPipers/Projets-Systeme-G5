@@ -1,0 +1,27 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Executive summary}{1}{section.1}
+\contentsline {section}{\numberline {2}Tables}{2}{section.2}
+\contentsline {section}{\numberline {3}Introduction}{3}{section.3}
+\contentsline {section}{\numberline {4}Mat\'eriel requis }{4}{section.4}
+\contentsline {section}{\numberline {5}Mise en place d'un environnement de travail}{4}{section.5}
+\contentsline {subsection}{\numberline {5.1}Pr\'esentation}{4}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Cr\'eation d'une carte micro SD ou cl\'e USB bootable }{4}{subsection.5.2}
+\contentsline {subsection}{\numberline {5.3}Script pour cr\'eer une cl\'e Raspbian bootable pour Raspberry Pi }{7}{subsection.5.3}
+\contentsline {subsection}{\numberline {5.4}Activer le boot sur cl\'e USB}{8}{subsection.5.4}
+\contentsline {subsection}{\numberline {5.5}Script pour activer le boot sur USB}{9}{subsection.5.5}
+\contentsline {section}{\numberline {6}Cr\'eer un serveur NAS avec le logiciel Samba}{9}{section.6}
+\contentsline {subsection}{\numberline {6.1}Mise \`a jour du Raspberry Pi}{9}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}Installation du logiciel Samba}{10}{subsection.6.2}
+\contentsline {subsection}{\numberline {6.3}Script pour la cr\'eation du Serveur NAS avec installation et configuration du logiciel Samba}{11}{subsection.6.3}
+\contentsline {section}{\numberline {7}Ajouter un device pour stocker les donn\'ees}{12}{section.7}
+\contentsline {subsection}{\numberline {7.1}Cr\'eation du dossier accessible via le Serveur NAS}{12}{subsection.7.1}
+\contentsline {subsection}{\numberline {7.2}Attribution des droits sur le dossier mont\'e du device}{12}{subsection.7.2}
+\contentsline {subsection}{\numberline {7.3}Monter le ou les device(s) au d\'emarrage du Raspberry Pi}{12}{subsection.7.3}
+\contentsline {subsection}{\numberline {7.4}Script pour ajouter le device pour stocker les donn\'ees}{14}{subsection.7.4}
+\contentsline {section}{\numberline {8}C\^ot\'e client}{15}{section.8}
+\contentsline {subsection}{\numberline {8.1}Se connecter via l'adresse IP}{15}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Via le nom du Raspberry Pi}{15}{subsection.8.2}
+\contentsline {subsection}{\numberline {8.3}Script pour monter un lecteur r\'eseau c\^ot\'e client}{16}{subsection.8.3}
+\contentsline {section}{\numberline {9}Conclusion}{17}{section.9}
+\contentsline {section}{\numberline {10}R\'ef\'erence}{18}{section.10}
+\contentsline {section}{\numberline {11}Annexes}{19}{section.11}

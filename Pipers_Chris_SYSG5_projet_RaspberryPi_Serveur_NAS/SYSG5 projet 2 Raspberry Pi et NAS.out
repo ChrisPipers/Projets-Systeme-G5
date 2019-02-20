@@ -1,0 +1,26 @@
+\BOOKMARK [1][-]{section.1}{Executive summary}{}% 1
+\BOOKMARK [1][-]{section.2}{Tables}{}% 2
+\BOOKMARK [1][-]{section.3}{Introduction}{}% 3
+\BOOKMARK [1][-]{section.4}{Mat\351riel requis }{}% 4
+\BOOKMARK [1][-]{section.5}{Mise en place d'un environnement de travail}{}% 5
+\BOOKMARK [2][-]{subsection.5.1}{Pr\351sentation}{section.5}% 6
+\BOOKMARK [2][-]{subsection.5.2}{Cr\351ation d'une carte micro SD ou cl\351 USB bootable }{section.5}% 7
+\BOOKMARK [2][-]{subsection.5.3}{Script pour cr\351er une cl\351 Raspbian bootable pour Raspberry Pi }{section.5}% 8
+\BOOKMARK [2][-]{subsection.5.4}{Activer le boot sur cl\351 USB}{section.5}% 9
+\BOOKMARK [2][-]{subsection.5.5}{Script pour activer le boot sur USB}{section.5}% 10
+\BOOKMARK [1][-]{section.6}{Cr\351er un serveur NAS avec le logiciel Samba}{}% 11
+\BOOKMARK [2][-]{subsection.6.1}{Mise \340 jour du Raspberry Pi}{section.6}% 12
+\BOOKMARK [2][-]{subsection.6.2}{Installation du logiciel Samba}{section.6}% 13
+\BOOKMARK [2][-]{subsection.6.3}{Script pour la cr\351ation du Serveur NAS avec installation et configuration du logiciel Samba}{section.6}% 14
+\BOOKMARK [1][-]{section.7}{Ajouter un device pour stocker les donn\351es}{}% 15
+\BOOKMARK [2][-]{subsection.7.1}{Cr\351ation du dossier accessible via le Serveur NAS}{section.7}% 16
+\BOOKMARK [2][-]{subsection.7.2}{Attribution des droits sur le dossier mont\351 du device}{section.7}% 17
+\BOOKMARK [2][-]{subsection.7.3}{Monter le ou les device\(s\) au d\351marrage du Raspberry Pi}{section.7}% 18
+\BOOKMARK [2][-]{subsection.7.4}{Script pour ajouter le device pour stocker les donn\351es}{section.7}% 19
+\BOOKMARK [1][-]{section.8}{C\364t\351 client}{}% 20
+\BOOKMARK [2][-]{subsection.8.1}{Se connecter via l'adresse IP}{section.8}% 21
+\BOOKMARK [2][-]{subsection.8.2}{Via le nom du Raspberry Pi}{section.8}% 22
+\BOOKMARK [2][-]{subsection.8.3}{Script pour monter un lecteur r\351seau c\364t\351 client}{section.8}% 23
+\BOOKMARK [1][-]{section.9}{Conclusion}{}% 24
+\BOOKMARK [1][-]{section.10}{R\351f\351rence}{}% 25
+\BOOKMARK [1][-]{section.11}{Annexes}{}% 26

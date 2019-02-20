@@ -1,0 +1,36 @@
+Mémo 
+executer le script en su
+
+/etc/grub.d (00_header, 05_debian_theme, 10_linux, 20_memtest86+, 20_linux_xen, 30_os-prober,
+			30_uefi-firmware, 40_custom, 41_custom, README
+	OU
+			(00_header, 00_tuned, 10_linux, 10_linux_xen, 20_memtest86+, 30_os-prober, 40_custom,
+			41_custom, 80_suse_btrfs_snapshot, 90_persistent, 95_textmode, README 
+			
+/boot/grub2/grub.cfg <-> grub2-mkconfig -o /boot/grub2/grub.cfg
+
+/etc/default/grub <-> saved -> /boot/grub2/grubenv -> saved_entry=openSUSE Leap 42.3 ou 0 à n
+
+10_linux -> openSUSE Leap 42.3 -> 3ème année
+30_os-prober -> openSUSE 42.3 -> 2ème année
+
+sed -i 's/GRUB\_DEFAULT=.*/GRUB\_DEFAULT=2/g' /../etc/default/grub
+
+sudo grub2-set-default '2'
+
+sed -i 's/GRUB\_TIMEOUT=.*/GRUB\_TIMEOUT=30/g' /../etc/default/grub
+
+gsettings set org.gnome.background picture-uri "file:///home/user/Images/opensuse.jpg"
+
+sed -i '108a troisieme=\textbackslash\textbackslash ~troisi\textbackslash\textbackslash 
+ème\textbackslash\textbackslash~ ann\textbackslash\textbackslashée' /../etc/grub.d/10\_linux
+
+sed -i '110s/os="\$1"/os="\$1""\$troisieme"/g' /../etc/grub.d/10\_linux
+
+sed -i '248s/"\$OS \$onstr"/"\$OS \$onstr \ deuxi\textbackslash ème\textbackslash ~ann\textbackslashée"/g' /../etc/grub.d/30\_os-prober
+
+mv /../etc/grub.d/10\_linux /../etc/grub.d/30\_linux
+
+mv /../etc/grub.d/30\_os-prober /../etc/grub.d/10\_os-prober
+
+sudo update-grub

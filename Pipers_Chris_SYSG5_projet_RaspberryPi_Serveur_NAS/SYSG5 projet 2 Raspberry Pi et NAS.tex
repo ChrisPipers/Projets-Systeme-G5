@@ -1,0 +1,558 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\usepackage{hyperref}
+\usepackage{epsfig}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{amsfonts}
+
+\oddsidemargin -4mm 	% Marge de gauche -4mm
+\textwidth 17cm 	% Largeur de gauche = 17cm
+\textheight 22cm 	% Hauteur du texte = 22cm
+\parindent 0cm		% Pas d'indentation de paragraphe
+
+\lstset{ 
+	extendedchars=\true,
+	breaklines=true,
+	language=sh
+}
+
+\begin{document}
+
+%---- Page de garde -----------------------------------------------------------------
+\begin{titlepage}
+  \begin{center}
+
+    % image
+	\begin{center} 
+	\includegraphics[width=4cm]{images/esi.eps} 
+	\end{center}   
+
+	% cours 
+\singlespacing
+    \textsc{\LARGE Projet SYSG5 }  \\[0.2cm]
+    \textsc{\LARGE Systèmes d'exploitation III }\\[1cm]
+    \singlespacing
+	% titre
+    \textsc{\Large Rapport de projet : Création d'un serveur NAS avec Raspberry Pi modèle 3B }
+    \\[4cm]
+    
+    % auteur et enseignant / directeur
+	\begin{minipage}{1.0\textwidth}
+      \begin{flushright} \large
+        \emph{Directeur :} M. \textsc{Willemse Michel}\\
+        \emph{Professeur : } Mme. \textsc{Bastreghi Monica}\\
+        \emph{Élève :} M. \textsc{Pipers Chris G39864}
+      \end{flushright}
+    \end{minipage}
+	\vspace{5cm}
+
+    % Bottom of the page
+    {\large Année 2018 - 2019}
+    \vfill
+  \end{center}
+\end{titlepage}
+
+%---- Executive summary ---------------------------------------------------------------
+\newpage
+\section{Executive summary}
+Ce rapport contient les étapes pour créer un serveur NAS à l'aide d'un Raspberry Pi modèle 3B, un disque dur externe et une machine cliente pour tester le fonctionnement du serveur.
+
+Chaque étape de création est effectuée à l'aide de script afin d'automatiser les actions. 
+
+La création d'une carte SD ou d'une clé USB bootable (après avoir activer cette option) se fait avec la distribution Raspbian, plus précisément la version Stretch with desktop de Raspbian.
+
+L'installation du logiciel Samba permet la gestion du serveur NAS ainsi que son accessibilité en le configurant. 
+
+Pour stocker les données du serveur un disque dur alimenté par une alimentation externe est connecté au Raspberry Pi. Il faut démonter le système de fichier et ensuite formater le disque dur au format ext3, ext4, ? format supporté par Linux et ses distributions.
+
+
+Pour tester le serveur, il faut configurer la machine, "le client", avec laquelle y accéder. La configuration permet de reconnaître le Serveur NAS présent sur le Raspberry Pi comme un lecteur réseau.?
+
+
+
+%---- Table des matière -------------------------------------------------------------
+\newpage
+\section{Tables}
+\tableofcontents
+\index{makeidx}
+\index{makeindex} 
+\index{printindex} 
+\index{index}
+
+%---- Introduction -----------------------------------------------------------------
+\newpage
+\section{Introduction}
+Dans le cadre du cours de "Systèmes d'exploitation III", il est demandé de réaliser un projet définit en accord avec le professeur. Cela dans le cadre d'explorer le vaste domaine en lien avec les systèmes d'exploitation, plus particulièrement celui de GNU linux et ses distributions. 
+	
+Dans ce projet, il a été question de créer un serveur NAS, Network Attached Storage[0], via un Raspberry Pi modèle 3B, une carte micro SD et un disque dur. Pour ce faire, il a fallu créer une carte micro SD bootable, installer le programme pour la gestion du serveur, monter le disque dur et connecter ce dernier au Raspberry Pi. Ce disque dur est utilisé pour le stockage des données qui sont mises sur le serveur. Enfin, du côté client monté un lecteur réseau afin d'accéder au serveur NAS.
+
+Ces différentes étapes sont réalisées à l'aide de scripts pour que tout soit automatisé. 
+
+
+
+%---- Contenu rapport -----------------------------------------------------------------
+\newpage
+
+\section{Matériel requis }
+\begin{itemize}
+	\item Un Raspberry Pi modèle 3B 
+	\item Une alimentation de 2,5 ampère pour Raspberry Pi
+	\item Une carte micro SD de 8Giga minimum
+	\item Une clé USB de 8Giga minimum
+	\item Un disque dur avec alimentation externe [2]
+	\item Un écran 
+	\item Un clavier et souris avec connecteur USB
+	\item Un ordinateur avec une distribution Linux
+	\item Un réseau local	
+	\item Une connexion internet
+\end{itemize}
+
+%---- Création de la carte SD ou clé USB bootable -----------------------------------------------------------------
+\section{Mise en place d'un environnement de travail}
+\subsection{Présentation}
+À la base, le Raspberry Pi ne contient pas de bios mais une mémoire que l'on nomme "\textbf{One Time Programmable}", \textbf{OTP}. Cette dernière est programmée pour booter sur carte micro SD. Sur le modèle 3B, il est possible de booter sur une clé Universal Serial Bus[1], USB possédant une plus grande durée de vie grâce au nombre de cycles d'écriture qui est plus grand que celle des carte micro SD. 
+
+Ce mode, une fois activé, est irréversible mais il est toujours possible de booter sur carte micro SD par la suite. Ce dernier étant toujours le boot prioritaire. Pour activer le boot sur clé USB, il faut tout de même booter une première fois sur une carte micro SD pour activer cette option. 
+
+Pour le boot sur clé USB, toutes les clés ne fonctionnes pas. Plusieurs clés ont été testées et une a fini par fonctionner. Suite à des recherches sur cette problématique, aucune explication n'a été trouvée mais certains tutoriels disponibles sur internet conseillent certaines clés qui fonctionnent à coup sûr. 
+
+\subsection{Création d'une carte micro SD ou clé USB bootable } 
+Pour créer une carte micro SD ou une clé  USB bootable, il faut tout d'abord télécharger l'image du système d'exploitation Raspbian[3]. Raspbian est un système d'exploitation basé sur Debian GNU/Linux optimisé pour fonctionner sur Raspberry Pi[4]. 
+Sur le site, il faut prendre la version "\textbf{Raspbian Stretch with desktop and recommended software}"[5] qui possède un bureau et est complète.  
+Télécharger la distribution à l'adresse :
+ 
+\url{https://downloads.raspberrypi.org/raspbian_full_latest}
+
+Avec la commande \textbf{wget}[]:	
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+wget -O Raspbian.zip https://downloads.raspberrypi.org/raspbian\_full
+\_latest -d /home/nomUser/Documents\end{minipage}
+}
+
+L'option \textbf{-d} permet d'enregistrer le fichier téléchargé dans un dossier spécifique, il s'agit ici, du dossier Documents de l'utilisateur courant.
+La distribution téléchargée est compressée sous format ZIP, avant de pouvoir l'utiliser, il faut la décompresser. Cela ce fait via la commande \textbf{unzip} [20]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+unzip /home/nomUser/Documents/Raspbian.zip -d /home/nomUser/Documents
+\end{minipage}
+}
+L'option \textbf{-d} permet d'enregistrer le fichier téléchargé dans un dossier spécifique, il s'agit ici, du dossier Documents de l'utilisateur courant.
+Pour savoir quel device sélectionné, la commande \textbf{lsblk} avec l'option \textbf{-p} permet de voir le chemin dans le nom des devices. L'option \textbf{-o} avec name et size comme attribut permet de conserver que les colonnes name et size. La commande complète est :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+lsblk -p -o name,size
+\end{minipage}
+}
+Après avoir sélectionné le device a utilisé, il faut la préparer afin de la rendre bootable. Pour cela, l'utilisation des commande \textbf{umount} [6] et \textbf{dd} [21] sont nécessaires. La première permet de démonter le système de fichier du device et la seconde de copier l'image de la distribution avec le paramètre \textbf{bs=4M} [7]. Ce paramètre bs permet de choisir la taille des blocs, ici la sélection de 4M c'est-à-dire 4096bytes qui est la taille généralement recommandée. 
+La commande pour démonter le device est :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+umount /dev/deviceSelectionné 2> /dev/null
+\end{minipage}
+}
+
+L'opérateur \textbf{2> /dev/null} [8] permet de rediriger les sorties pour les " jetter " afin qu'elles n'affichent pas toutes les informations sur l'exécution de la commande sur le terminal.
+La commande pour copier l'image de Raspbian est :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+dd bs=4M if=/home/nomUser/Documents/nonImage of=/dev/deviceSelectionné status=progress conv=fsync
+\end{minipage}
+}
+
+L'option \textbf{status=progress} permet de voir les statistiques de transfert et l'option \textbf{conv= fsync} [13] s'assure que le fichier soit totalement copié sur le device et que tout soit synchronisé. 
+
+\subsection{Script pour créer une clé Raspbian bootable pour Raspberry Pi }
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+\lstinputlisting{codes/scriptToInstallRaspbian.sh}
+\end{minipage}
+}
+
+
+
+Après avoir exécuté le script, il suffit de mettre la carte SD (ou la clé USB) dans le Raspberry Pi et il démarrera automatiquement le système d'exploitation.
+
+Par défaut, le nom d'utilisateur du Raspberry Pi est " \textbf{pi} " et pour mot de passe " \textbf{raspberry} ".  
+
+\subsection{Activer le boot sur clé USB}
+
+Pour activer le boot sur USB, il faut "reprogrammer" l'OTP en ajoutant au fichier \textbf{config.txt} qui se trouve dans le dossier \textbf{boot} la ligne " \textbf{program\_usb\_boot\_mode=1}" [9] . Une fois cette option activée, elle est définitive mais le bootage sur carte micro SD restera le boot prioritaire et toujours utilisable par la suite. 
+
+Il faut démarrer une première fois via une carte micro SD pour pouvoir modifier le fichier et activer ce mode. Pour ajouter la ligne pour activer le boot sur USB il faut utiliser la commande \textbf{echo} [24]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo echo program\_usb\_boot\_mode=1 | sodo tee -a /boot/config.txt
+\end{minipage}
+}
+
+Pour vérifier que cette option est bien activée, il faut utiliser la commande :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo vcgencmd otp\_dump | grep 17 
+\end{minipage}
+}
+
+La valeur alors retournée doit être : \textbf{3020000A}.
+
+\subsection{Script pour activer le boot sur USB}
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+\lstinputlisting{codes/scriptToActivateBootUSB.sh}
+\end{minipage}
+}
+
+%---- Création du serveur NAS avec le logiciel Samba -----------------------------------------------------------------
+\section{Créer un serveur NAS avec le logiciel Samba}
+
+L'utilisation d'un disque dur alimenté par alimentation externe permet de diminuer la consommation énergétique du Raspberry Pi. 
+
+\subsection{Mise à jour du Raspberry Pi}
+Avant tout de choses, il faut mettre le Raspberry Pi à jour avec les commandes :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo apt update
+\end{minipage}
+}
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo apt upgrade
+\end{minipage}
+}
+
+Création des dossiers accessibles sur le NAS
+Il faut créer des dossiers qui seront accessibles publiquement et privativement sur le NAS. Afin d'y parvenir, il faut créer des dossiers spécifiques avec la commande \textbf{mkdir} [22]. 
+Ces dossiers seront créés avec les commandes :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo mkdir /home/shares
+\end{minipage}
+}
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo mkdir /home/shares/public 
+\end{minipage}
+}
+
+Administrer les groupes et les droits sur le dossier public précédemment créé. 
+
+La commande \textbf{chown} [10] sert à administrer les groupes, ici attribué au fichier \textbf{public} le groupe " \textbf{users} ".
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo chown -R root :users /home/shares/public
+\end{minipage}
+}
+
+L'option \textbf{-R} permet d'attribuer ce groupe à tous les fichiers présents dans ce dossier de manière récursive.
+
+La commande \textbf{chmod} [11] sert à administrer les droits, ici attribué les droits au fichier public. Les droits sont \textbf{lire(r)}, \textbf{écrire(w)} et \textbf{exécuter(x)} aux groupes \textbf{utilisateurs(u)} et \textbf{groupe(g)}. Pour les \textbf{autres(o)}, les droits attribués sont \textbf{lire(r)} et \textbf{exécuter(x)}.
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo chmod -R up=rwx,o=rx /home/shares/public
+\end{minipage}
+}
+
+L'option \textbf{-R} permet d'attribuer ces droits à tous les fichiers présents dans ce dossier de manière récursive.
+
+\subsection{Installation du logiciel Samba}
+Le logiciel Samba permet de gérer la mise en réseau d'un ou de plusieurs disque(s) dur et de procurer un accès à ce ou ces derniers depuis un ordinateur ou autres machines connectées au réseau locale. 
+La commande pour installer \textbf{le logiciel Samba} :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo apt install samba samba-common-bin 
+\end{minipage}
+}
+
+Après avoir installé le logiciel, il faut attribuer les paramètres pour la partie publique du Serveur NAS. Pour ce faire, il faut modifier le \textbf{fichier smb.conf} du dossier \textbf{/etc/samba} et ajouter les lignes suivantes à la fin de ce fichier via la commande \textbf{echo} [24]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+echo "[public] \\
+  	comment= Public Storage \\
+  	path = /home/shares/public \\
+  	valid users = @users \\
+  	force group = users \\
+  	create mask = 0660 \\
+  	directory mask = 0771 \\
+  	read only = no "  >> /etc/samba/smb.conf
+\end{minipage}
+} 
+ 
+Pour valider ces modifications, il faut \textbf{redémarrer le logiciel Samba}, la commande pour cela est :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo /etc/init.d/samba restart
+\end{minipage}
+}
+
+Ajouter un utilisateur à Samba via la commande \textbf{smbpasswd}[12]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo smbpasswd -a pi 
+\end{minipage}
+}
+
+L'option \textbf{-a} spécifie que l'utilisateur " \textbf{pi} " est ajoutée, ensuite un \textbf{mot de passe} est demandé pour cet utilisateur. 
+
+\subsection{Script pour la création du Serveur NAS avec installation et configuration du logiciel Samba}
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+\lstinputlisting{codes/scriptToInstallNAS.sh}
+\end{minipage}
+}
+
+
+%---- ajouter un device de stockage de données -----------------------------------------------------------------
+\section{Ajouter un device pour stocker les données}
+Pour stocker les données du serveur, l'utilisation d'une clé USB ou d'un disque dur est possible. Dans ce projet, le choix fût porté sur un disque dur alimenté par une alimentation externe. 
+Après avoir connecté le disque dur au Raspberry Pi, pour savoir quel est le nom attribué à ce device la commande \textbf{lsblk} avec l'option \textbf{-p} permet de voir le chemin dans le nom des devices. L'option \textbf{-o} avec \textbf{name} et \textbf{size} comme attribut permet de conserver que les colonnes name et size, la commande complète est :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth} 
+lsblk -p -o name,size
+\end{minipage}
+}
+
+Le disque dur doit être démonté et formaté avec un système de fichiers connus de Linux, tel que \textbf{ext3}, \textbf{ext4}, ? 
+La commande pour le démonter est \textbf{umount} [6] :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+umount /dev/deviceSelectionné
+\end{minipage}
+}
+
+La commande pour le formater est \textbf{mkfs} [23]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo mkfs.ext4 /dev/deviceSelectionné
+\end{minipage}
+}
+
+\subsection{Création du dossier accessible via le Serveur NAS}
+La création du dossier dans lequel sera monté le device accessible via le Serveur NAS.  Après la création de ce dossier, il faut lui attribuer le groupe et les droits qui lui sont propres. 
+La commande \textbf{mkdir} [22] sert à créer le dossier dans lequel sera monté le device :
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo mkdir /home/shares/public/disk1
+\end{minipage}
+}
+
+\subsection{Attribution des droits sur le dossier monté du device}
+La commande \textbf{chown} [10] permet d'administrer le groupe, ici attribuer au dossier \textbf{disk1} le groupe " \textbf{users} ".
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo chown -R root:users /home/shares/public/disk1
+\end{minipage}
+}
+
+L'option \textbf{-R} permet d'attribuer ce groupe à tous les fichiers présents dans ce dossier de manière récursive.
+La commande \textbf{chmod} [11] sert à administrer les droits, ici attribuer les droits au fichier \textbf{disk1}. Les droits sont \textbf{lire(r)}, \textbf{écrire(w)} et \textbf{exécuter(x)} aux groupes \textbf{utilisateurs(u)} et \textbf{groupe(g)}. Pour les \textbf{autres(o)}, les droits attribués sont \textbf{lire(r)} et \textbf{exécuter(x)}.
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo chmod -R ug=rwx,o=rx /home/shares/public/disk1
+\end{minipage}
+}
+
+L'option \textbf{-R} permet d'attribuer ces droits à tous les fichiers présents dans ce dossier de manière récursive.
+
+\subsection{Monter le ou les device(s) au démarrage du Raspberry Pi}
+Le device précédemment monté, une fois le Raspberry éteint et redémarré ce device ne sera pas automatiquement monté. Pour parer ce problème, il faut ajouter au fichier \textbf{fstab} du dossier \textbf{/etc} du Raspberry Pi la ligne suivante "\textbf{/dev/deviceSelectionné /home/shares/public/disk1 auto noatime,nofail 0 0}" via la commande \textbf{echo} [24]: 
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+echo "/dev/deviceSelectionné /home/files/public/disk1 auto noatime,nofail 0 0" >> /etc/fstab
+\end{minipage}
+}
+\subsection{Script pour ajouter le device pour stocker les données}
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+\lstinputlisting{codes/scriptToInstallPeriph.sh}
+\end{minipage}
+}
+
+
+\section{Côté client}
+Pour accéder au Serveur NAS présent sur le Raspberry Pi du côté client, il faut monter un lecteur réseau. 
+Pour cela, il faut configurer le fichier \textbf{fstab} présent dans le dossier \textbf{/etc} de l'ordinateur ou de la machine voulant se connecter au serveur NAS. Pour le configurer, il nous faut connaitre l'adresse IP de notre Raspberry Pi ou son nom. L'adresse IP étant susceptible de changer si elle n'est pas déclarée fixe, il est recommandé d'utiliser le nom du Rapsberry Pi. 
+Pour pouvoir configurer cela, il faut télécharger et installer le paquet \textbf{cifs-utils} [14] qui permet de monter un partage réseau. La commande pour installer ce paquet est : 
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+sudo apt-get install cifs-utils
+\end{minipage}
+}
+
+\subsection{Se connecter via l'adresse IP}
+Pour connaître l'adresse IP du Rapsberry Pi, il suffit de taper dans le terminal la commande \textbf{ip addr show} [] et de prendre l'adresse présente dans \textbf{wlan0}, \textbf{inet 192.168.???.???}, ou il faut remplacer les "???" par les chiffres indiqués dans le terminal via la commande ip addr show.
+Il faut configurer le fichier \textbf{fstab} [18] en y ajoutant la ligne [15][16] "\textbf{//192.168.???.???/public /media/documents cifs  username=pi,password=****,iocharset=utf8,file\_mode=0777,dir\_mode =0777,noperm 0 0}"
+L'ajout se fait via la commande \textbf{echo} [24]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}	
+echo " //192.168.???.???/public /media/documents cifs  username=pi,password=****,iocharset=utf8,file\_mode=0777,dir\_mode =0777,noperm 0 0 " >> /etc/fstab
+\end{minipage}
+}
+
+\textbf{192.168.???.???/public} est le dossier accessible publiquement sur le Raspberry Pi grâce au serveur. Le dossier \textbf{/media/documents} est le dossier où est monté le réseau de partage. C'est dans ce fichier que seront accessibles les fichiers et/ou dossiers présents sur le Serveur NAS. Dans ce dossier \textbf{/media/documents} peut également accueillir les fichiers et/ou dossiers voulant être stockés par le client.
+Les options de la commande :
+	\textbf{Username=pi} , est l'utilisateur ajouté précédemment dans la création du Serveur NAS.
+	\textbf{Password =****}, est le mot de passe demandé après l'ajout de l'utilisateur au Serveur NAS. Les 4* sont à remplacer par le mot de passe qui a été sélectionné lors de la création de l'utilisateur du serveur NAS.   
+	\textbf{File\_mode=0777} et \textbf{dir\_mode=0777} permettent d'avoir les droits lecture (r), écriture (w) et exécution (x) sur les fichiers et dossiers présents sur ce lecteur réseau. 
+	\textbf{iocharset=utf8} [17], définit l'encodage utilisé pour le montage du lecteur réseau. 
+	\textbf{noperm} [], permet de désactiver les autorisations et d'assurer que les utilisateurs locaux peuvent partager les données sur le lecteur réseau.
+	\textbf{0 0} [18], le premier 0 correspond au \textbf{<dump>}, pour faire des sauvegardes du système de fichiers, la valeur 0 correspond à ignorer le système de fichiers. Le second 0 correspond au \textbf{<pass>}, ce paramètre sert à la commande \textbf{fsck} [19] et détermine l'ordre dans lequel les systèmes de fichiers vont être vérifiés.  
+
+\subsection{Via le nom du Raspberry Pi}
+Si rien n'a été changé, le nom du Raspberry Pi est " \textbf{RASPBERRYPI} ". Il suffit dés lors, au lieu de noter l'adresse ip après le double slash, de noter le nom du Raspberry Pi. La ligne a ajouté à \textbf{fstab} est alors :
+\textbf{//RASPBERRYPI/public /media/documents cifs username=pi,password=1234,iocharset=utf8,file\_mode=0777,dir\_mode =0777,noperm 0 0}
+
+L'ajout se fait via la commande \textbf{echo} [24]:
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}	
+echo "//RASPBERRYPI/public /media/documents cifs username=pi,password=****,iocharset=utf8,file\_mode=0777,dir\_mode =0777,noperm 0 0 " >> /etc/fstab
+\end{minipage}
+}
+
+\subsection{Script pour monter un lecteur réseau côté client}
+
+\fcolorbox{black}{gray!30}{
+\begin{minipage}{1\textwidth}
+\lstinputlisting{codes/scriptToMountClient.sh}
+\end{minipage}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%---- Conclusion -----------------------------------------------------------------
+\newpage
+\section{Conclusion}
+La création d'un serveur NAS avec un Raspberry Pi modèle 3B et un disque dur alimenté par alimentation externe se divise en plusieurs étapes.
+ 
+Tout d'abord, il faut créer une carte micro SD bootable avec la distribution Raspbian. Le Raspberry Pi modèle 3B permet quant à lui de booter sur une clé USB permettant de garantir une plus grande durée de vie du Système grâce au plus grand nombre de cycles d'écriture de ces dernières comparer aux cartes SD.
+  
+Après avoir le système d'exploitation fonctionnel en insérant simplement la carte SD (ou clé USB) avec le Système Raspbian, il faut installer le logiciel Samba qui permet de mettre en place un système de réseau de partage. Après l'installation le logiciel, il faut créer les dossiers de partage qui seront disponible sur le Serveur NAS et apporter certaines configurations telles que la création d'un utilisateur et de son mot de passe associé.
+
+Le logiciel permettant la mise en place d'un Serveur NAS une fois installé, il faut lui ajouter le disque dur où seront stockés les fichiers du Serveur. Pour cela, il faut monter le système de fichiers et le formater au format ext4 ( ou ext3, ? ) qui correspond au format utiliser par Linux. Il faut également créer les dossiers où seront stockés les fichiers, accorder les droits et groupes nécessaires et choisis pour ces  dossiers.4
+Pour s'assurer que le disque dur soit monté automatiquement il faut éditer le fichier /etc/fstab du Raspberry Pi.
+
+Du coté du client, il suffit d'installer le paquet cifs-utils pour gérer les lecteurs réseau et d'éditer le fichier /etc/fstab pour monter un lecteur réseau. 
+
+%---- Référence -----------------------------------------------------------------
+\newpage
+\section{Référence}
+
+[0] \url {https://fr.wikipedia.org/wiki/Serveur\_de\_stockage\_en\_r\%C3\%A9seau)}
+
+[1] \url {https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/msd.md}
+
+[2] \url {https://knowledge.parcours-performance.com/monter-disque-dur-externe-partage-raspberry-pi/}
+
+[3] \url {https://www.raspberrypi.org/downloads/raspbian/}
+
+[4] \url {https://fr.wikipedia.org/wiki/Raspbian}
+
+[5] \url {https://www.raspberrypi.org/forums/viewtopic.php?t=204204}
+
+[6] \url {https://linux.101hacks.com/unix/umount/}
+
+[7] \url {https://doc.ubuntu-fr.org/dd}
+
+[8] \url {https://askubuntu.com/questions/350208/what-does-2-dev-null-mean}
+
+[9] \url {https://www.framboise314.fr/boot-simplifie-sur-usb-avec-les-raspberry-pi-1-2-et-3/}
+
+[10] \url {http://www.octetmalin.net/linux/tutoriels/chown-changer-proprietaire-groupe-fichier-dossier-repertoire-en-ligne-de-commande.php}
+
+[11] \url {https://doc.ubuntu-fr.org/permissions}
+
+[12] \url {https://www.samba.org/samba/docs/current/man-html/smbpasswd.8.html}
+
+[13] \url {https://unix.stackexchange.com/questions/369884/using-dd-on-mac-os-conv-fsync-equivalent}
+
+[14] \url {https://www.it-connect.fr/monter-un-partage-cifs-sous-linux/}
+
+[15] \url {https://askubuntu.com/questions/313093/how-do-i-mount-a-cifs-share-via-fstab-and-give-full-rw-to-guest}
+
+[16] \url {http://linux.jpvweb.com/linux/mesrecetteslinux/doku.php?id=montage_samba}
+
+[17] \url {https://askubuntu.com/questions/760058/what-is-the-purpose-of-iocharset-utf8}
+
+[18] \url {https://wiki.debian.org/fr/fstab}
+
+[19] \url {https://doc.ubuntu-fr.org/fsck}
+
+[20] \url {https://www.commentcamarche.net/faq/955-linux-compresser-decompresser-un-fichier-zip}
+
+[21] \url {https://doc.ubuntu-fr.org/dd}
+
+[22] \url {https://www.tutorialspoint.com/unix_commands/mkdir.htm}
+
+[23] \url {https://www.computerhope.com/unix/mkfs.htm}
+
+[24] \url {https://www.computerhope.com/unix/uecho.htm}
+
+
+
+
+%---- Annexes -----------------------------------------------------------------
+\newpage
+\section{Annexes}
+Vous trouverez dans le dossier compressé:
+\begin{itemize} 
+\item un dossier "codes" contenant les différents scripts;
+\item un dossier "images" contenant les images utilisées pour le rapport;
+\item un readme;
+\item un aide mémoire pour l'examen;
+\item rapport\_SYSG5\_Pipers\_Chris.pdf : le document pdf généré;
+\item rapport\_SYSG5\_Pipers\_Chris.tex : le document latex;
+
+\end{itemize} 
+
+\end{document}

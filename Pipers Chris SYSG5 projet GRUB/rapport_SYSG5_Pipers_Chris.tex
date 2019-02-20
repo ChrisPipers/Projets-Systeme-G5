@@ -1,0 +1,406 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+%\usepackage{upquote}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\usepackage{hyperref}
+\usepackage{epsfig}
+\usepackage{xcolor}
+\usepackage{listings}
+%,lstautogobble}
+\begin{document}
+
+%---- Page de garde -----------------------------------------------------------------
+\begin{titlepage}
+  \begin{center}
+
+    % image
+	\begin{center} 
+	\includegraphics[width=4cm]{images/esi.eps} 
+	\end{center}   
+
+	% cours 
+\singlespacing
+    \textsc{\LARGE Projet SYSG5 }  \\[0.2cm]
+    \textsc{\LARGE Systèmes d'exploitation III }\\[1cm]
+    \singlespacing
+	% titre
+    \textsc{\Large Rapport de projet : modification de GRUB2 }
+    \\[4cm]
+    
+    % auteur et enseignant / directeur
+	\begin{minipage}{1.0\textwidth}
+      \begin{flushright} \large
+        \emph{Directeur :} M. \textsc{Willemse Michel}\\
+        \emph{Professeur : } Mme. \textsc{Bastreghi Monica}\\
+        \emph{Élève :} M. \textsc{Pipers Chris G39864}
+      \end{flushright}
+    \end{minipage}
+	\vspace{5cm}
+
+    % Bottom of the page
+    {\large Année 2018 - 2019}
+    \vfill
+  \end{center}
+\end{titlepage}
+
+%---- Executive summary ---------------------------------------------------------------
+\newpage
+\section{Executive summary}
+Dans le cadre du cours de "Systèmes d'exploitation III", il a été demandé de réaliser un projet qui porte sur les modifications et la personnalisation du programme GRUB, GRanted Unified Bootloader. 
+
+Le but des modifications effectuées vise à faciliter la tâche aux élèves de deuxième année dans le choix du bon système d?exploitation.
+
+Les modifications sont au nombre de 5 :
+\begin{itemize}
+	\item Changer l'os sélectionné par défaut ;
+	\item Changer la valeur du compte à rebours avant le lancement de l'os par défaut ;
+	\item Changer le fond d'écran des os ; 
+	\item Changer le titre des entrées des différents os présents;
+	\item Changer l'ordre des entrées de l'interface menu.
+\end{itemize}
+Ces modifications doivent se faire automatiquement et ce à l'aide d'un script shell. 
+
+
+%---- Table des matière -------------------------------------------------------------
+\newpage
+\section{Tables}
+\tableofcontents
+\index{makeidx}
+\index{makeindex} 
+\index{printindex} 
+\index{index}
+
+%---- Introduction -----------------------------------------------------------------
+\newpage
+\section{Introduction}
+Dans le cadre du cours de "Systèmes d'exploitation III", il est demandé de réaliser un projet définit en accord avec le professeur. Cela dans le cadre d'explorer le vaste domaine en lien avec les systèmes d'exploitation, plus particulièrement celui de GNU linux et ses distributions.
+
+Dans ce projet, il a été question de modifier le programme de démarrage GRUB. La version présente sur les machines de l'école est GRUB2. Le fonctionnement est similaire à GRUB mais l'architecture des fichiers est différente. Cette dernière sera détaillée par la suite.
+
+Les modifications apportées sont principalement axées sur la personnalisation de l'interface menu GRUB2. Ces modifications sont réalisées de manière automatique grâce à un script shell. 
+
+
+%---- Contenu rapport -----------------------------------------------------------------
+\newpage
+
+\section{GRUB}
+\subsection{Présentation de GRUB}
+GRUB est l'acronyme de Grand Unified Bootloader.
+
+GRUB2 est un programme, plus précisément un bootloader, à savoir un programme d'amorçage en français. Il permet le multiboot.
+Le multiboot fournit par GRUB2 permet de choisir entre plusieurs systèmes d'exploitation présents sur une seule machine. 
+
+S'il le peut, il amorcera le système d'exploitation, sinon il renverra vers le bootloader spécifiquement utilisé par ce dernier. 
+ 
+\subsection{Les avantages de GRUB}
+
+Les avantages de GRUB2 sont multiples:
+\begin{itemize}
+	\item GRUB2 est simple d'utilisation;
+	\item Son interface menu est intuitive;
+	\item Il n'a pas de limite quant au nombre d'entrées pour les différents systèmes d'exploitation;
+	\item Il est gratuit et opensource; 
+	\item GRUB2 accepte plusieurs types de systèmes d'exploitation tel que Linux, Windows, Mac OS X,... ;
+	\item Grâce à la commande "update-grub", il se met automatiquement à jour, et met à jour le fichier de configuration utilisé qui est grub.cfg se trouvant dans le répertoire /boot/grub2 .
+\end{itemize}
+
+\subsection{Procédure de démarrage avec GRUB} 
+La procédure de démarrage de l'ordinateur avec le programme GRUB2 se produit comme suit : 
+Le BIOS, Basic Input Output System, va lire le MBR, Master Boot Record qui lit le premier secteur du disque dur où l'on trouve la table des partitions et le fameux programme bootloader qui dans notre cas est GRUB2. À son chargement, GRUB2 fournit une interface menu qui nous permet de sélectionner un système d'exploitation à démarrer, à ajouter, à lancer les tests mémoires ou à aller dans le menu des options avancées des différents système d'exploitation présents. 
+
+\subsection{Architecture de GRUB}
+GRUB2 utilise le fichier grub.cfg pour s'exécuter. Ce fichier se trouve dans le répertoire /boot/grub2. Ce fichier contient toutes les informations nécessaires à GRUB2 pour savoir où trouver les partitions, leurs types ( Linux, Windows, Max OS x, ...), les paramètres de GRUB2 lui-même, etc. Pour générer le fichier grub.cfg, il faut utiliser la commande grub2-mkconfig -o /boot/grub2/grub.cfg. Pour simplement le mettre à jour utiliser la commande update-grub.
+Le fichier grub.cfg est généré grâce aux différents fichiers script présents dans le répertoire /etc/grub.d. Pour le modifier, il faut changer les fichiers étant présents et pour que ces modifications soient enregistrées et permanentes, après avoir modifié le (ou les) fichier(s) de configuration, il faut utiliser la commande update-grub.
+
+En général, les fichiers de configuration sont :
+
+\begin{itemize}
+	\item 00\_header est un script qui contient les en-têtes générées et les paramètres de GRUB2 grâce au fichier grub se trouvant dans le répertoire /etc/default. Ce fichier grub contient les paramètres tels que le système d'exploitation sélectionné par défaut, le temps d'affichage de l'interface menu GRUB2 avant le lancement du système d'exploitation par défaut, afficher ou cacher le temps avant le lancement du système d'exploitation par défaut, conserver la dernière entrée sélectionnée, ... .
+	
+	\item 05\_debian\_theme est un script qui contient les informations à propos du thème graphique pour le menu de démarrage. Les données concernant le(s) thème(s) se trouve dans le répertoire /boot/grub2/themes.
+
+	
+	\item 10\_linux est le script qui contient l'entrée pour le noyau linux. Il s'agit de celui sur lequel nous somme. 
+
+	\item 20\_memtest86+ est le script contenant les entrées pour les testes mémoires.
+
+	\item 30\_os-prober est le script permettant de détecter les autres os et de générer leur entrée, valable pour les noyaux linux (en cas de plusieurs entrées linux), windows, mac os x ou hurd. 
+
+	\item 40\_custom  est un script qui permet de gérer et de générer les entrées ajoutées manuellement dans GRUB2 via l'interface menu lorsque GRUB2 démarre. 
+
+	\item 41\_custom, identique à 40\_custom, est le script qui permet de gérer et de générer les entrées ajoutées manuellement.
+\end{itemize}
+
+\
+A l'école, les fichiers, 00\_header, 10\_linux, 20\_memtest86+, 30\_os-prober, 41\_custom, 40\_custom sont quasiment identiques mais il y a d'autres fichiers: 
+
+\
+\begin{itemize}
+	\item 00\_tuned est le script permettant de gérer les profils techniques tels que le profil économie d'énergie ou le profil optimisation des performances, d'autres types de profil sont possibles. Il utilise le fichier tuned se trouvant dans le répertoire /etc/tuned.
+	
+	\item 20\_linux\_xen, est le script qui contient les différentes entrées pour les noyaux linux Xen, qui est un logiciel permettant de faire tourner plusieurs systèmes d'exploitation sur une même ressource matérielle telle qu'un serveur et un pc.
+
+	\item 80\_suse\_btrfs\_snapshot, ce script permet de gérer les instantanés, faire des sauvegarde de l'état d'un système. Il permet, grâce à ces sauvegardes, de garantir que le système soit fonctionnel et sans bug pour le prochain démarrage. 
+
+	\item 90\_persistent, ce script contient la commande awk pour créer le script grub.cfg utiliser pour configurer GRUB2.
+
+	\item 95\_textmode, ce script permet de lister le contenu du répertoire pour le système efi et de démarrer en mode EFI. Si le fichier recherché dans ce script n'existe pas le pc démarrera en mode BIOS
+\end{itemize}
+\
+Leur numérotation permet de les ordonner dans leur utilisation, dans la configuration et la génération du fichier grub.cfg. Tous ne sont pas forcément nécessaire: le fichier 20\_memtest86+ peut, s'il le faut, être désactivé en lui enlevant les droits de s'exécuter (commande : chmod +x 20\_memtest86+). 
+Dans GRUB, la liste des systèmes d'exploitation se trouve dans le fichier menu.lst mais dans GRUB2, cette liste se trouve dans le fichier grub.cfg dont les entrées se trouvent dans les fichiers du répertoire /etc/grub.d notamment, 10\_linux et 30\_os\_prober et/ou si une ou des entrées sont personnalisées, dans le fichier 40\_custom ou 41\_custom. 
+
+%---- Architecture de GRUB -----------------------------------------------------------
+\subsection{Architecture de GRUB2 en arbre}
+\tikzstyle{every node}=[draw=black,thick,anchor=west]
+
+\subsubsection{Fichier grub.cfg, grubenv et du répertoire themes}
+%fichier grub.cfg
+\tikzstyle{all node}=[draw=black,thick,anchor=west]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {/boot}
+      child { node {/grub2}
+			child { node { grub.cfg }}
+			child { node { grubenv }}
+			child { node { themes }}};
+\end{tikzpicture}
+
+\subsubsection{Fichier de configuration de GRUB2 dans grub.d}
+%fichier de configuration de grub.d
+\tikzstyle{all node}=[draw=black,thick,anchor=west]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {/etc}
+      child { node {/grub.d}
+      		child { node { 00\_header }}
+      		child { node { 05\_debian\_theme }}
+			child { node { 10\_linux }}
+			child { node { 20\_memtest86+ }}
+			child { node { 20\_linux\_xen }}
+			child { node { 30\_os\-prober }}
+			child { node { 30\_uefi\-firmware }}
+			child { node { 40\_custom }}
+			child { node { 41\_custom }}
+			child { node { README }}
+			};
+\end{tikzpicture}
+
+\subsubsection{Fichier de configuration de GRUB2 dans grub.d à l'école}
+%fichier de configuration de grub.d
+\tikzstyle{all node}=[draw=black,thick,anchor=west]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {/etc}
+      child { node {/grub.d}
+      		child { node { 00\_header }}
+      		child { node { 00\_tuned }}
+			child { node { 10\_linux }}
+    		child { node { 10\_linux\_xen }}
+			child { node { 20\_memtest86+ }}
+			child { node { 30\_os\-prober }}
+			child { node { 40\_custom }}
+			child { node { 41\_custom }}
+			child { node { 80\_suse\_btrfs\_snapshot }}
+			child { node { 90\_persistent }}
+			child { node { 95\_textmode }}
+			child { node { README }}
+			};
+\end{tikzpicture}
+
+\subsubsection{Fichier grub pour les paramètres utiliser par le fichier 00\_header}
+
+%grub pour les params
+\tikzstyle{all node}=[draw=black,thick,anchor=west]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {/etc}
+      child { node {/default}
+      		child { node { grub }}};
+\end{tikzpicture}
+
+%---- Projet -------------------------------------------------------------
+\newpage
+\section{Projet}
+\subsection{Tutoriel pas à pas}
+Avant de modifier les fichiers de configuration, il faut vérifier que l'on possède les droits nécessaire, sinon il faut utiliser la commande :
+\begin{center}
+\fcolorbox{black}{gray!30}{sudo chmod 700 nomfichier}
+\end{center} 
+
+\subsubsection{et personnalisation de GRUB2}
+Le projet est axé sur la modification et la personnalisation de GRUB2. 
+Les modifications suggérées étaient :
+\begin{itemize} 
+	\item Changer le système sélectionné par défaut;
+	\item Changer la valeur du compte à rebours avant le lancement du système d'exploitation par défaut;
+	\item Changer le fond d'écran des systèmes d'exploitation ; 
+	\item Changer le titre des entrées des différents systèmes présents;
+	\item Changer l'ordre des entrées de l'interface menu.
+\end{itemize}
+
+\subsubsection{Changer le système sélectionner par default}
+Le but était ici de sélectionner par défaut le système d'exploitation utilisé par les élèves de 2 ème année (SYSG3-4), openSuse 42.3. 
+Pour changer l'ordre, il faut modifier le fichier /etc/default/grub. Selon le nombre d'os présents, les entrées vont de 0 à n, 0 étant l'os sélectionné par défaut et n le nombre total d'entrées. La variable à modifier dans le fichier grub est GRUB\_DEFAULT=0. La valeur zéro peut être remplacée par une autre valeur comprise entre 0 à n ou une variable. La commande pour effectuer cette modification est :
+	\begin{center} 
+	\fcolorbox{black}{gray!30}{sed -i 's/GRUB\_DEFAULT=.*/GRUB\_DEFAULT=2/g' /../etc/default/grub}
+	\end{center} 
+Cette variable peut être extérieure et être utilisée pour donner une valeur à GRUB\_DEFAULT, tel est le cas à l'école où la variable GRUB\_DEFAULT reçoit la valeur de la variable saved, qui contient le nom du système d'exploitation. Cette variable extérieure se trouve dans le fichier grubenv, qui se trouve dans le répertoire /boot/grub2. La variable de ce fichier est : saved\_entry=openSUSE Leap 42.3. La variable saved\_entry peut également prendre un nombre en paramètre également compris entre 0 à n. La commande pour la modifier est :
+	\begin{center} 
+	\fcolorbox{black}{gray!30}{sudo grub2-set-default '2'}
+	\end{center} 
+
+
+\subsubsection{Changer la valeur du compte à rebours}
+Le but est d'augmenter le temps du compte à rebours pour avoir le temps de lire chaque entrée sans se précipiter sur un choix.
+Afin d'y parvenir, il faut modifier le fichier /etc/default/grub. La variable à modifier est GRUB\_TIMEOUT="x", x étant un entier. Cet entier est le nombre de secondes avant que le système d'exploitation par défaut ne soit lancé. Parmi les entiers, deux valeurs sont particulières, le -1 signifie que le compte à rebours est infini et le 0 aura pour effet, quant à lui, de lancer le système d'exploitation par défaut directement. La commande pour modifier le nombre de seconde est:
+	\begin{center} 
+	\fcolorbox{black}{gray!30}{sed -i 's/GRUB\_TIMEOUT=.*/GRUB\_TIMEOUT=30/g' /../etc/default/grub}
+	\end{center} 
+
+\subsubsection{Changer le font d'écran du système d'exploitation}
+Le choix de vouloir apporter cette modification fut principalement pour aider à savoir sur quelle partition le pc a  booté, à savoir si nous sommes sur la distribution openSuse Leap 42.3 (celle pour les 3 ème année) ou openSuse 42.3 (pour les 2 ème année). 
+Pour GRUB2, les seules modifications possibles sont celles pour la personnalisation de son interface menu à lui et lui seul, et non celle du système d'exploitation. On peut changer la couleur de la police, la couleur de fond ou bien mettre une image en fond d'écran dont les formats d'image sont limités (PNG, JPG ou JPEG et TGA) ou spécifier un thème complet qui se trouvera dans le répertoire "themes" qui se trouve dans /boot/grub2.
+
+Pour modifier le fond d'écran du système d'exploitation, il faut lancer un script dans la console et non dans le démarrage et/ou paramétrage de GRUB2. Pour modifier le fond d'écran la commande est :
+\begin{center} 
+\fcolorbox{black}{gray!30}{gsettings set org.gnome.background picture-uri "file:///home/user/Images/opensuse.jpg"}
+	\end{center} 
+L'image doit se trouver dans le répertoire utilisé.
+
+\subsubsection{Changer le titre des entrées des différents systèmes présent}
+Le changement des titres des entrées permet de savoir quel système d'exploitation booter dès la première utilisation des ordinateurs présents dans le local 503 sans lire le readme présent sur le bureau.  
+Les commandes pour modifier le titre de openSUSE Leap 42.3 est :
+\begin{center} 
+\fcolorbox{black}{gray!30}{sed -i '108a troisieme=\textbackslash\textbackslash ~troisi\textbackslash\textbackslash ème\textbackslash\textbackslash~ ann\textbackslash\textbackslash ée' /../etc/grub.d/10\_linux}
+	\end{center} 
+Cette commande a pour but de rajouter la variable troisieme au fichier 10\_linux. Les doubles backslash permettent de donner le résultat suivant : \textbackslash ~troisi\textbackslash ème\textbackslash ~ann\textbackslash ée ce qui permettra d'avoir le caratère d'échapement \textbackslash et d'utiliser  un caractère spécial.
+La commande pour ajouter la variable troisieme au titre est :
+\begin{center} 
+\fcolorbox{black}{gray!30}{sed -i '110s/os="\$1"/os="\$1""\$troisieme"/g' /../etc/grub.d/10\_linux}
+	\end{center}
+	
+Les commandes pour modifier le titre de openSUSE 42.3 est :
+\begin{center}
+\fcolorbox{black}{gray!30}{sed -i '248s/"\$OS \$onstr"/"\$OS \$onstr \ deuxi\textbackslash ème\textbackslash ~ann\textbackslashée"/g' /../etc/grub.d/30\_os-prober}
+\end{center}
+
+\subsubsection{Changer l'ordre des entrées de l'interface menu}
+Pour changer l'ordre des entrées il suffit de renommer les fichiers contenant les entrées vers les systèmes d'exploitation. Les fichiers étant uniquement 10\_linux et 30\_os-prober, il faut changer leur numérotations vu qu'ils sont utilisés selon cet ordre. Le fichier 10\_linux devient 30\_linux et le fichier 30\_os-prober devient 10\_os-prober et ce grâce aux commandes:
+\begin{center}
+\fcolorbox{black}{gray!30}{mv /../etc/grub.d/10\_linux /../etc/grub.d/30\_linux}
+\end{center}
+
+\begin{center}
+\fcolorbox{black}{gray!30}{mv /../etc/grub.d/30\_os-prober /../etc/grub.d/10\_os-prober}
+\end{center}
+
+\subsubsection{Commande final pour enregistrer ces modifications}
+Après avoir effectué ces modifications il faut obligatoirement effectuer la commande : 
+	\begin{center} 
+	\fcolorbox{black}{gray!30}{sudo update-grub}
+	\end{center} 
+pour mettre à jour le fichier grub.cfg.
+
+
+
+%---- Script -------------------------------------------------------------
+\newpage
+\section{Le script shell}
+Avant le lancement des scripts il faut vérifier s'ils sont bien exécutable via la commande :
+\begin{center}
+\fcolorbox{black}{gray!30}{ls -l}
+\end{center}
+S'ils ne le sont pas il faut leur attribuer le droit avec la commande:
+\begin{center}
+\fcolorbox{black}{gray!30}{chmod +x scriptSYSG5}
+\end{center}
+\begin{center}
+\fcolorbox{black}{gray!30}{chmod +x changeBackground}
+\end{center}
+
+\subsubsection{Script pour modifier les paramètres de GRUB2}
+\fcolorbox{black}{gray!30}{\lstinputlisting{codes/scriptSYSG5.sh} }
+
+\subsubsection{Script pour modifier le fond d'écran}
+\fcolorbox{black}{gray!30}{ \lstinputlisting{codes/scriptChangeBackground.sh} }
+
+
+
+
+
+%---- Conclusion -----------------------------------------------------------------
+\newpage
+\section{Conclusion}
+Ce travail à permis d'explorer et de comprendre le fonctionnement de GRUB2. Il a permis également de savoir comment le personnalisé.
+ 
+La principale difficulté de la modification de GRUB2 fut de comprendre les relations entre les fichiers qui le compose et de savoir quoi modifier et où.
+
+La modification du choix par défaut du système d'exploitation et du temps de délai avant le lancement par défaut se modifie par simple changement de valeur des variables associées à ces paramètres. 
+
+Pour le changement d'ordre des entrées de l'interface menu GRUB2 il à fallut renommer le fichier 10\_linux en 30\_linux et le fichier 30\_os-prober en 10\_os-prober. Comme ils sont utilisées dans l'ordre alphabétique le simple changement de nom les réorganisent. De ce fait le premier système d'exploitation devient openSUSE 42.3 et puis openSUSE Leap 42.3.
+
+Le changement du nom des différents systèmes d'exploitation quant à eux furent plus compliqué. Il a fallu savoir dans quel fichier apporter les modifications ensuite, où modifier le titre. Les modifications furent apporter au fichier 30\_linux (anciennement 10\_linux) pour le système d'exploitation openSUSE Leap 42.3 et le fichier 10\_os-prober (anciennement 30\_os-prober) pour le système d'exploitation openSUSE 42.3. 
+
+Pour la modification des fonds d'écrans des systèmes d'exploitation cela n'est pas possible par la modification des fichiers de GRUB2 mais, par un simple script lancé dans la console du système. 
+
+Toutes ces modifications furent effectuer à l'aide d'un script lancé dans le terminal de manière automatisée. 
+
+%---- Référence -----------------------------------------------------------------
+\newpage
+\section{Référence}
+
+
+\url{https://www.commentcamarche.com/faq/3635-grub-la-structure-de-fichier-de-configuration} \newline
+\url{https://openclassrooms.com/fr/courses/1363591-apprenez-a-maitriser-grub/1363667-histoire-et-fonctionnement-de-grub}\newline
+\url{https://www.quora.com/What-is-the-difference-between-UEFI-and-Legacy-Mode-which-we-need-to-choose-while-installing-the-OS}\newline
+\url{https://openclassrooms.com/fr/courses/1363591-apprenez-a-maitriser-grub/1363922-configurez-grub-legacy}\newline
+\url{https://openclassrooms.com/fr/courses/43538-reprenez-le-controle-a-laide-de-linux/42867-introduction-aux-scripts-shell}\newline
+\url{https://askubuntu.com/questions/47488/how-to-change-the-purple-background-color-in-grub}\newline
+\url{https://doc.ubuntu-fr.org/grub-pc}\newline
+\url{https://www.toutes-les-couleurs.com/code-couleur-rvb.php}\newline
+\url{https://doc.ubuntu-fr.org/permissions}\newline
+\url{https://www.thegeekstuff.com/2012/10/grub-splash-image/}\newline
+\url{https://doc.ubuntu-fr.org/tutoriel/grub2_parametrage_manuel}\newline
+\url{https://www.howtogeek.com/196655/how-to-configure-the-grub2-boot-loaders-settings/}\newline
+\url{https://www.dedoimedo.com/computers/grub-2.html}\newline
+\url{https://www.dedoimedo.com/computers/grub.html}\newline
+\url{https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-customizing_the_grub_2_configuration_file}\newline
+\url{http://sdz.tdct.org/sdz/apprenez-a-maitriser-grub.html#Leboot}\newline
+\url{https://www.linux.com/forums/getting-started-linux/need-change-menu-title-grub2}\newline
+\url{https://ubuntuforums.org/showthread.php?t=1287602}\newline
+\url{https://doc.opensuse.org/documentation/leap/reference/html/book.opensuse.reference/cha.grub2.html}\newline
+\url{https://www.howtogeek.com/howto/17787/clean-up-the-new-ubuntu-grub2-boot-menu/}\newline
+\url{https://linuxfr.org/users/ar7/journaux/btrfs-et-opensuse-episode-2-snapper-et-grub2}\newline
+\url{https://ubuntuforums.org/showthread.php?t=2210008}\newline
+
+
+
+%---- Annexes -----------------------------------------------------------------
+\newpage
+\section{Annexes}
+Vous trouverez dans le dossier compressé:
+\begin{itemize} 
+\item rapport\_SYSG5\_Pipers\_Chris.pdf : le document pdf généré ;
+\item rapport\_SYSG5\_Pipers\_Chris.tex le document latex ;
+\item le dossier "codes" contenant les deux scripts utilisés ;
+\item le dossier "images" contenant le logo de l'école ;
+\item le readme ;
+\item l'aide mémoire pour l'examen.
+\end{itemize} 
+
+\end{document}
